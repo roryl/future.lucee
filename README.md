@@ -23,6 +23,27 @@ A future is useful in the scenario where you have a background task that you wan
 
 You don't need to use a future when you do not care about the result of the task. In this case, a simple thread {} will suffice.
 
+##Features
+###Result Callbacks
+Future can optionally take callbacks which will be called at the appropriate time. All of the callbacks execute asynchronously along with the task. The constructor signature is:
+```
+public function init(required function task, 
+		     function success, 
+		     function error, 
+		     function finally){
+```
+####task()
+The primary closure to execute 
+
+####success(any result)
+A closure which will recieve the result of the task if there was any
+
+####error(any error)
+A closure which will receive the result of the error when executing the task
+
+####finally(any result) or finally(any result)
+A closure which will receive either an error, or the result of the task. The value is passed as a named parameter. To have the closure check if it was a result or an error, in the body of the closure use: `structKeyExists(arguments,"error")` or `structKeyExists(arguments,"result")`
+
 ##Thread Saftey
 The closure passed to the future contains references to the scopes of where it was created. Be careful about race conditions when accessing the variables scope or global scope. You should `var` any local variables inside the closure to ensure no race conditions with the calling page. You should lock {} any access to global scopes
 
