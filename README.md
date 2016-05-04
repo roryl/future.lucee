@@ -62,7 +62,9 @@ echo("The result was: #future.get()# and took #future.elapsed()# ms to finish");
 </cfscript>
 ```
 
-What is going on behind the scenes is when the second future fires, it calls get() on the first. This is a convenience over manually chaining futures by referencing previous futures, which could be done like so:
+Each future in the chain gets a reference to previous future so that errors or the data can be checked. When using the Then mehtod, the prior future is guaranteed to have completed.
+
+What is going on behind the scenes is when the second future fires, it calls get() on the first. This is a convenience over manually setting up a chain of futures by referencing previous futures. But ordering the execution of futures is also possible like so:
 
 ```coldfusion
 var firstFuture = new future(function(){
