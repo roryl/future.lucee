@@ -41,7 +41,7 @@ A closure which will recieve the result of the task if there was any
 ####error(any error)
 A closure which will receive the result of the error when executing the task
 
-####finally(any result) or finally(any result)
+####finally(any error) or finally(any result)
 A closure which will always execute and receives either an error, or the result of the task. The value is passed as a named parameter. To have the closure check if it was a result or an error, in the body of the closure use: `structKeyExists(arguments,"error")` or `structKeyExists(arguments,"result")`
 
 ###Chainable
