@@ -24,7 +24,7 @@ A future is useful in the scenario where you have a background task that you wan
 You don't need to use a future when you do not care about the result of the task. In this case, a simple thread {} will suffice.
 
 ##Features
-###Result Callbacks
+###Futures can execute callbacks
 Future can optionally take callbacks which will be called at the appropriate time. All of the callbacks execute asynchronously along with the task. Thus is the task is canceled, none of these functions can be guaranteed to have executed. The constructor signature is:
 ```
 public function init(required function task, 
@@ -44,7 +44,7 @@ A closure which will receive the result of the error when executing the task
 ####finally(any error) or finally(any result)
 A closure which will always execute and receives either an error, or the result of the task. The value is passed as a named parameter. To have the closure check if it was a result or an error, in the body of the closure use: `structKeyExists(arguments,"error")` or `structKeyExists(arguments,"result")`
 
-###Chainable
+###Futures are chainable
 Futures can be chained using the then() function which will pause execution of the next future until the first future completes. Chainable futures would be used when you want to return control to the calling page that created the chain, but each future must execute sequentially.
 
 ```coldfusion
