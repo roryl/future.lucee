@@ -13,15 +13,30 @@ component accessors="true" {
 		variables.task = task;
 		variables.done = false;
 		variables.canceled = false;
+		variables.startTime = getTickCount();
+		// writeDump(callStackGet());
 		
 		if(structKeyExists(arguments,"success")){variables.success = arguments.success;}
 		if(structKeyExists(arguments,"error")){variables.error = arguments.error;}
 		if(structKeyExists(arguments,"finally")){variables.finally = arguments.finally;}	
 
-		thread name="#variables.name#" action="run" {			
+		thread name="#variables.name#" action="run" {
+			thread action="sleep" name="#variables.name#" duration="10";
+
+			if(structKeyExists(variables,"prior")){
+				//Block the execution of this thread untilt he prior future is complete
+				variables.prior.get();				
+			}
+
 			try {
-				variables.result = variables.task();				
+
+				if(structKeyExists(variables,"prior")){
+					variables.result = variables.task(variables.prior);									
+				} else {
+					variables.result = variables.task();														
+				}								
 				variables.done = true;
+				variables.endTime = getTickCount();
 			} catch (any e){
 				variables.taskError = e;
 				variables.done = true;
@@ -50,6 +65,15 @@ component accessors="true" {
 		}
 	}
 
+	public function then(required future future){
+		future.setPrior(this);
+		return future;
+	}
+
+	public function setPrior(future){
+		variables.prior = arguments.future;
+	}
+
 	public function get(required numeric milliseconds=0){
 		
 		if(isCanceled()){
@@ -66,7 +90,9 @@ component accessors="true" {
 			throw("Did not complete the thread before the timeout #milliseconds# was reached");
 		}
 
-		return variables.result;
+		if(!isNull(variables.result)){			
+			return variables.result;
+		}
 	}
 
 	public function hasError(){
@@ -91,6 +117,14 @@ component accessors="true" {
 
 	public boolean function isCanceled(){
 		return variables.canceled;	
+	}
+
+	public function elapsed(){
+		if(isDone() or isCanceled()){
+			return variables.endTime - variables.startTime;
+		} else {
+			return getTickCount() - variables.startTime;
+		}
 	}
 
 }

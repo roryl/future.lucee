@@ -140,5 +140,73 @@ component extends="testbox.system.BaseSpec"{
 		}).toThrow(message="Did not complete the thread before the timeout 50 was reached");
 	}
 
+	function elapsedTest(){
+		var future = new future(function(){
+			sleep(1000);
+			return "foo";
+		});		
+		sleep(50);
+		echo(future.elapsed());
+		future.get();
+		expect(future.elapsed() > 1000).toBeTrue();
+	}
+
+	function sleepTest(){
+
+		timer type="outline"{
+			thread action="run" name="outer" {
+				thread action="sleep" name="outer" duration="50";
+				sleep(50);
+			}			
+			thread action="join" name="outer";
+		}
+	}
+
+	function thenTest(){
+
+		startStartTime = getTickCount();
+
+		var future = new future(function(){
+			sleep(1000);
+			return 10;
+		}).then(new future(function(prior){
+			sleep(1000);
+			prior = prior.get();
+			return "20" + prior;
+		}));
+
+		startTime = getTickCount();
+		writeDump((startTime - startStartTime) / 1000);
+
+		writeDump(future.get());
+
+		endTime = getTickCount();
+		writeDump((endTime - startTime) / 1000);
+
+		// writeDump(result.get());
+		writeDump(future.get());
+
+		include template="/examples/chainable.cfm";
+		// .then(new future(function(prior){
+		// 	sleep(1000);
+		// 	return prior + 10;
+		// })).get();
+		// writeDump(future);
+	}
+
+	function manualThenTest(){
+
+		var firstFuture = new future(function(){
+			sleep(1000);
+			return 10;
+		});
+
+		var secondFuture = new future(function(){
+			prior = firstFuture.get();			
+			sleep(1000);
+			return "20" + prior;
+		});
+		writeDump(secondFuture.get());
+	}
 	
 }
