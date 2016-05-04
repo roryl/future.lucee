@@ -17,3 +17,6 @@ future = new future(function(){
 echo(future.get());
 </cfscript>
 ```
+
+##Limitations
+Future makes use of the Lucee thread tag which cannot support nested threads. Therefore any code blocks passed to future will error with `"could not create a thread within a child thread"` if there was a nested future
