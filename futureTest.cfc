@@ -118,6 +118,27 @@ component extends="testbox.system.BaseSpec"{
 		include template="/examples/nestedMap.cfm";
 	}
 
+	function cancelTest(){		
+		var future = new future(function(){
+			sleep(1000);
+			return "foo";
+		});		
+		expect(future.isDone()).toBeFalse();
+		expect(future.cancel()).toBeTrue();
+		expect(future.isDone()).toBeTrue();	
+		expect(future.isCanceled()).toBeTrue();	
+	}
+
+	function timoutTest(){		
+		var future = new future(function(){
+			sleep(1000);
+			return "foo";
+		});		
+		
+		expect(function(){
+			future.get(50);			
+		}).toThrow(message="Did not complete the thread before the timeout 50 was reached");
+	}
 
 	
 }
