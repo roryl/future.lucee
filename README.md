@@ -25,7 +25,7 @@ You don't need to use a future when you do not care about the result of the task
 
 ##Features
 ###Result Callbacks
-Future can optionally take callbacks which will be called at the appropriate time. All of the callbacks execute asynchronously along with the task. The constructor signature is:
+Future can optionally take callbacks which will be called at the appropriate time. All of the callbacks execute asynchronously along with the task. Thus is the task is canceled, none of these functions can be guaranteed to have executed. The constructor signature is:
 ```
 public function init(required function task, 
 		     function success, 
