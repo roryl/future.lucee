@@ -62,6 +62,21 @@ echo("The result was: #future.get()# and took #future.elapsed()# ms to finish");
 </cfscript>
 ```
 
+What is going on behind the scenes is when the second future fires, it calls get() on the first. This is a convenience over manually chaining futures by referencing previous futures, which could be done like so:
+
+```coldfusion
+var firstFuture = new future(function(){
+	sleep(1000);
+	return 10;
+});
+
+var secondFuture = new future(function(){
+	prior = firstFuture.get();			
+	sleep(1000);
+	return "20" + prior;
+});
+```
+
 The echo produces `The result was: 30 and took 2019 ms to finish` which we can see that it took the time for both futures to complete.
 
 ##Thread Saftey
