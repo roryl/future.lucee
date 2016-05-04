@@ -100,6 +100,24 @@ component extends="testbox.system.BaseSpec"{
 		include template="/examples/basic.cfm";
 	}
 
+	function nestedExampleTest(){
+
+		expect(function(){
+			include template="/examples/nested.cfm";			
+		}).toThrow(message="could not create a thread within a child thread");
+	}
+
+	function parallelExampleTest(){
+
+		include template="/examples/parallel.cfm";			
+		// expect(function(){
+		// }).toThrow(message="could not create a thread within a child thread");
+	}
+
+	function basicExampleTest(){
+		include template="/examples/nestedMap.cfm";
+	}
+
 
 	
 }
