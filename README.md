@@ -45,7 +45,7 @@ A closure which will receive the result of the error when executing the task
 A closure which will always execute and receives either an error, or the result of the task. The value is passed as a named parameter. To have the closure check if it was a result or an error, in the body of the closure use: `structKeyExists(arguments,"error")` or `structKeyExists(arguments,"result")`
 
 ###Chainable
-Futures can be chained using the then() function which will pause execution of the next future when the first future completes. Chainable futures would be used when you want to return control to the calling page creating the chain, but each future must execute sequentially.
+Futures can be chained using the then() function which will pause execution of the next future until the first future completes. Chainable futures would be used when you want to return control to the calling page that created the chain, but each future must execute sequentially.
 
 ```coldfusion
 <cfscript>
@@ -58,9 +58,11 @@ future = new future(function(){
 	return "20" + priorValue;
 }));
 
-echo(future.get());
+echo("The result was: #future.get()# and took #future.elapsed()# ms to finish");
 </cfscript>
 ```
+
+The echo produces `The result was: 30 and took 2019 ms to finish` which we can see that it took the time for both futures to complete.
 
 ##Thread Saftey
 The closure passed to the future contains references to the scopes of where it was created. Be careful about race conditions when accessing the variables scope or global scope. You should `var` any local variables inside the closure to ensure no race conditions with the calling page. You should lock {} any access to global scopes
