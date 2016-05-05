@@ -87,22 +87,20 @@ Futures can yeild processing control to another future. This is useful for inter
 ```coldfusion
 <cfscript>
 ping = new future(function(this){
-	sleep(1000);
+	sleep(500);
+	this.yield(pong);
+	sleep(500);
 	this.yield(); //yields back to pong
-	sleep(1000);
-	return 10;
+	return "20";
 });
 
 pong = new future(function(this){
-	sleep(500);
-	this.yield(ping);
-	sleep(500);
+	sleep(1000);
 	this.yield(); //yields back to ping
-	var ping = ping.get();
-	return "20" + ping;
+	sleep(1000);	
+	return 10 + ping.get();
 });
-
-echo("The result was: #pong.get()# and took #pong.elapsed()# ms to finish");
+echo("The result was: #pong.get()# and took #pong.elapsed()# ms to finish.");
 </cfscript>
 ```
 
