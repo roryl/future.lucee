@@ -81,6 +81,35 @@ var secondFuture = new future(function(){
 
 The echo produces `The result was: 30 and took 2019 ms to finish` which we can see that it took the time for both futures to complete.
 
+###Yielding Futures
+Futures can yeild processing control to another future. This is useful for interleaving execution between futures. Take this example below that executes back and forth between ping and pong
+
+```coldfusion
+<cfscript>
+ping = new future(function(this){
+	sleep(1000);
+	this.yield(); //yields back to pong
+	sleep(1000);
+	return 10;
+});
+
+pong = new future(function(this){
+	sleep(500);
+	this.yield(ping);
+	sleep(500);
+	this.yield(); //yields back to ping
+	var ping = ping.get();
+	return "20" + ping;
+});
+
+echo("The result was: #pong.get()# and took #pong.elapsed()# ms to finish");
+</cfscript>
+```
+
+This outputs `The result was: 30 and took 2525 ms to finish.`
+
+We can see that by interleaving, total sleep time was about 500 ms less than the total sleep time of 3000 ms. This is because the first 500ms executed concurrently together, the pong yielded to ping.
+
 ##Thread Saftey
 The closure passed to the future contains references to the scopes of where it was created. Be careful about race conditions when accessing the variables scope or global scope. You should `var` any local variables inside the closure to ensure no race conditions with the calling page. You should lock {} any access to global scopes
 
