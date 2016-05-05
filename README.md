@@ -49,10 +49,10 @@ Futures can be chained using the then() function which will pause execution of t
 
 ```coldfusion
 <cfscript>
-future = new future(function(){
+future = new future(function(this){	
 	sleep(1000);
 	return 10;
-}).then(new future(function(priorFuture){
+}).then(new future(function(this, priorFuture){
 	sleep(1000);
 	priorValue = priorFuture.get();
 	return "20" + priorValue;
@@ -81,10 +81,37 @@ var secondFuture = new future(function(){
 
 The echo produces `The result was: 30 and took 2019 ms to finish` which we can see that it took the time for both futures to complete.
 
+###Yielding Futures
+Futures can yeild processing control to another future. This is useful for interleaving execution between futures. Take this example below that executes back and forth between ping and pong
+
+```coldfusion
+<cfscript>
+ping = new future(function(this){
+	sleep(500);
+	this.yield(pong);
+	sleep(500);
+	this.yield(); //yields back to pong
+	return "20";
+});
+
+pong = new future(function(this){
+	sleep(1000);
+	this.yield(); //yields back to ping
+	sleep(1000);	
+	return 10 + ping.get();
+});
+echo("The result was: #pong.get()# and took #pong.elapsed()# ms to finish.");
+</cfscript>
+```
+
+This outputs `The result was: 30 and took 2525 ms to finish.`
+
+We can see that by interleaving, total sleep time was about 500 ms less than the total sleep time of 3000 ms. This is because the first 500ms executed concurrently together, the pong yielded to ping.
+
 ##Thread Saftey
 The closure passed to the future contains references to the scopes of where it was created. Be careful about race conditions when accessing the variables scope or global scope. You should `var` any local variables inside the closure to ensure no race conditions with the calling page. You should lock {} any access to global scopes
 
 ##Limitations
 Future makes use of the Lucee thread tag which cannot support nested threads. Therefore any code blocks passed to future will error with `"could not create a thread within a child thread"` if there was a nested future. If you need to do further parallel processing within the executing code, make use of one of Lucee's parallel functions: map(), each(), every(), reduce(), some(), filter()
 
-The example nestedMap.cfm shows how to do this.
+The example nestedMap.cfm shows how to do this. 
