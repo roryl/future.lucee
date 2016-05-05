@@ -1,8 +1,8 @@
 <cfscript>
-future = new future(function(){
+future = new future(function(this){	
 	sleep(1000);
 	return 10;
-}).then(new future(function(priorFuture){
+}).then(new future(function(this, priorFuture){
 	sleep(1000);
 	priorValue = priorFuture.get();
 	return "20" + priorValue;

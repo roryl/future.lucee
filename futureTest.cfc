@@ -100,11 +100,10 @@ component extends="testbox.system.BaseSpec"{
 		include template="/examples/basic.cfm";
 	}
 
-	function nestedExampleTest(){
-
+	function nestedExampleTest(){		
 		expect(function(){
-			include template="/examples/nested.cfm";			
-		}).toThrow(message="could not create a thread within a child thread");
+			include template="/examples/nested.cfm";
+		}).toThrow( message="could not create a thread within a child thread");
 	}
 
 	function parallelExampleTest(){
@@ -162,14 +161,28 @@ component extends="testbox.system.BaseSpec"{
 		}
 	}
 
+	function recursiveGetErrorTest(){
+
+		writeLog("new recursiveGetErrorTest");
+		var future = new future(function(this){
+			this.get();
+			sleep(1000);
+			return 10;
+		});
+		expect(future.hasError()).toBeTrue();
+		// future.get();
+	}
+
 	function thenTest(){
 
 		startStartTime = getTickCount();
+		writeLog("new thenTest");
+		include template="/examples/chainable.cfm";
 
 		var future = new future(function(){
 			sleep(1000);
 			return 10;
-		}).then(new future(function(prior){
+		}).then(new future(function(this, prior){
 			sleep(1000);
 			prior = prior.get();
 			return "20" + prior;
@@ -186,7 +199,6 @@ component extends="testbox.system.BaseSpec"{
 		// writeDump(result.get());
 		writeDump(future.get());
 
-		include template="/examples/chainable.cfm";
 		// .then(new future(function(prior){
 		// 	sleep(1000);
 		// 	return prior + 10;
@@ -206,7 +218,39 @@ component extends="testbox.system.BaseSpec"{
 			sleep(1000);
 			return "20" + prior;
 		});
+				
+		try {
+		} catch(any e){
+			writeDump(e);
+			abort;
+		}
+		
+		
+	}
+
+	function yeildTest(){
+
+		writeLog("new yieldTest");
+
+		var firstFuture = new future(function(this){
+			sleep(1000);
+			this.yield();			
+			sleep(1000);
+			return 10;
+		});
+
+		var secondFuture = new future(function(this){
+			this.yield(firstFuture);
+			sleep(500);
+			this.yield();
+			return "20";
+		});
+
+		// secondFuture.sleep();
+		// secondFuture.run();
 		writeDump(secondFuture.get());
+		writeDump(secondFuture.isDone());
+
 	}
 	
 }
