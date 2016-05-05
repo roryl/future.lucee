@@ -87,4 +87,4 @@ The closure passed to the future contains references to the scopes of where it w
 ##Limitations
 Future makes use of the Lucee thread tag which cannot support nested threads. Therefore any code blocks passed to future will error with `"could not create a thread within a child thread"` if there was a nested future. If you need to do further parallel processing within the executing code, make use of one of Lucee's parallel functions: map(), each(), every(), reduce(), some(), filter()
 
-The example nestedMap.cfm shows how to do this.
+The example nestedMap.cfm shows how to do this. 
