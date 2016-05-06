@@ -17,11 +17,12 @@ component accessors="true" {
 		variables.canceled = false;
 		variables.startTime = getTickCount();
 		variables.yields = [];
-		// writeDump(callStackGet());
+		variables.data = [];
+		variables.resumeallyields = false;
 		
 		if(structKeyExists(arguments,"success")){variables.success = arguments.success;}
 		if(structKeyExists(arguments,"error")){variables.error = arguments.error;}
-		if(structKeyExists(arguments,"finally")){variables.finally = arguments.finally;}	
+		if(structKeyExists(arguments,"finally")){variables.finally = arguments.finally;}
 
 		thread name="#variables.name#" action="run" {
 			thread action="sleep" name="#variables.name#" duration="10";
@@ -76,13 +77,9 @@ component accessors="true" {
 	}
 
 	public function then(required future future){
-		future.setPrior(this);
+		future._setPrior(this);
 		return future;
-	}
-
-	public function setPrior(future){
-		variables.prior = arguments.future;
-	}
+	}	
 
 	public function get(required numeric milliseconds=0){
 
@@ -94,12 +91,15 @@ component accessors="true" {
 		// 		}
 		// 	}			
 		// }
+		// 
+		
+		variables.resumeallyields = true;
 
 		if(isCanceled()){
 			throw("The thread was canceled, cannot get the result");
 		}
 
-		if(variables.sleeping){
+		if(variables.sleeping){			
 			this.resume();
 		}
 
@@ -156,29 +156,67 @@ component accessors="true" {
 		} else {
 			return getTickCount() - variables.startTime;
 		}
+	}	
+
+
+	public function resume(){
+		variables.sleeping = false;
 	}
 
-	public void function sleep(duration=10){
-		variables.sleeping = true;
-		while(variables.sleeping){
-			sleep(arguments.duration);
-		}		
-	}	
+	public function call(data){
+		//Calling the future directly
+		if(!isNull(data)){
+			variables.data.append(data);			
+		}
+		this.resume();
+	}
+
+	public function reply(data){
+		if(!isNull(variables.yieldFrom)){
+			//Calling the last future to yield to this one
+			if(!isNull(data)){
+				variables.yieldFrom.call(data);
+			}
+			variables.yieldFrom.resume();
+		} else {
+			throw("Cannot reply because there was not future which yielded to this one.")
+		}
+	}
+
+	public function hasData(){
+		return variables.data.len() > 0;
+	}
 
 	public function yield(future yieldTo){
 		
-		if(isNull(arguments.yieldTo)){
-			_yieldBack();		
+		//If there is a waiting call, we return the call data immediately
+		if(this.hasData()){
+			var out = variables.data[1];
+			variables.data.deleteAt(1);
+			return out;
 		} else {
-			_yieldTo(yieldTo);					
-		}		
-	}
+
+			writeLog("No data, should yield");
+			
+			if(isNull(arguments.yieldTo)){
+				_yieldBack();		
+			} else {
+				_yieldTo(yieldTo);				
+			}
+
+			if(this.hasData()){
+				var out = variables.data[1];
+				variables.data.deleteAt(1);
+				return out;
+			}
+		}
+	}	
 
 	public function _yieldBack(){
 		if(!isNull(variables.yieldFrom)){
 			writeLog("yielding to #variables.yieldFrom.getName()# from #this.getName()#");
 
-			variables.yieldFrom.yieldFrom(this);
+			variables.yieldFrom._yieldFrom(this);
 			variables.yieldFrom.resume();
 			variables.sleeping = true;
 			
@@ -186,17 +224,28 @@ component accessors="true" {
 				if(variables.sleeping IS false){
 					break;
 				}
-				sleep(10);
-				// this.sleep(10);				
+				// sleep(10);
+				this._sleep(10);				
 			}
 		} else {
-			throw("Nothing to yeild back to. You must define a future to yield to, unless another future yeilded to this.");
+
+			writeLog("Yielded to main thread");
+			// return;
+			
+			//Yielding to the main thread			
+			variables.sleeping = true;
+			while(variables.sleeping AND variables.resumeallyields is false){
+				writeLog("sleeping for main thread");
+				sleep(10);
+				// this._sleep(10);
+			}
+			// throw("Nothing to yeild back to. You must define a future to yield to, unless another future yeilded to this.");							
 		}
 	}
 
 	public function _yieldTo(required future yieldTo){
 		writeLog("yielding to #yieldTo.getName()# from #this.getName()#");
-		yieldTo.yieldFrom(this);
+		yieldTo._yieldFrom(this);
 		yieldTo.resume();	
 		variables.sleeping = true;			
 		
@@ -204,17 +253,24 @@ component accessors="true" {
 			if(variables.sleeping IS false){
 				break;
 			}
-			sleep(10)
-			// this.sleep(10);					
-		}	
+			// sleep(10)
+			this._sleep(10);					
+		}
 	}
 
-	public function resume(future yieldFrom){
-		variables.sleeping = false;
-	}
-
-	public function yieldFrom(future yieldFrom){
+	public function _yieldFrom(future yieldFrom){
 		variables.yieldFrom = arguments.yieldFrom;
+	}
+
+	public void function _sleep(duration=10){
+		variables.sleeping = true;
+		while(variables.sleeping){
+			sleep(arguments.duration);
+		}		
+	}
+
+	public function _setPrior(future){
+		variables.prior = arguments.future;
 	}
 
 }

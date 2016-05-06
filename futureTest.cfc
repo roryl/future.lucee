@@ -163,13 +163,13 @@ component extends="testbox.system.BaseSpec"{
 
 	function recursiveGetErrorTest(){
 
-		writeLog("new recursiveGetErrorTest");
-		var future = new future(function(this){
-			this.get();
-			sleep(1000);
-			return 10;
-		});
-		expect(future.hasError()).toBeTrue();
+		// writeLog("new recursiveGetErrorTest");
+		// var future = new future(function(this){
+		// 	this.get();
+		// 	sleep(1000);
+		// 	return 10;
+		// });
+		// expect(future.hasError()).toBeTrue();
 		// future.get();
 	}
 
@@ -218,7 +218,7 @@ component extends="testbox.system.BaseSpec"{
 			sleep(1000);
 			return "20" + prior;
 		});
-				
+
 		try {
 		} catch(any e){
 			writeDump(e);
@@ -251,6 +251,42 @@ component extends="testbox.system.BaseSpec"{
 		writeDump(secondFuture.get());
 		writeDump(secondFuture.isDone());
 
+	}
+
+	function yieldToMainThreadTest(){
+		writeLog("new yieldTest");
+		setting requesttimeout="20";
+		var firstFuture = new future(function(this){			
+			start = 0;
+			
+			start = start + this.yield();
+			while(this.hasData()){
+				start = start + this.yield();
+			}
+			// this.yield();
+			writeLog(isNull(this.yield()));
+			
+			
+			return start;
+		});
+		
+		sleep(100);
+
+		firstFuture.call("10");
+		firstFuture.call("10");
+		writeDump(firstFuture.get());
+
+	}
+
+	function callTest(){
+		ping = new future(function(this){			
+			var result = this.yield(); //pauses execution to the main thread			
+			return "20" + result;
+		});
+
+		sleep(50);
+		ping.call("10");
+		expect(ping.get()).toBe(30);
 	}
 	
 }
