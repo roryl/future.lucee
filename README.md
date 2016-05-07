@@ -1,7 +1,7 @@
 # future.lucee
 A Futures Implementation for Lucee
 
-Lucee has multiple concurrency features between async functions, tasks and thread {}, but working with the underlying thread implementation is cumbersome to work with. A Future provides syntactic suger over the use of thread {} by executing the task in a thread and giving back a handle to check on completion to deal with the result.
+Lucee has multiple concurrency features between async functions, tasks and thread {}, but working with the underlying thread implementation is cumbersome to work with. A Future provides syntactic suger over the use of thread {} by executing a closure within a thread and giving back a handle to check on completion to deal with the result. 
 
 ##How to Use
 Future.lucee is a single class, future.cfc. The basic use is to create a new future and pass a closure to it that will be executed.
@@ -13,15 +13,27 @@ future = new future(function(){
 	return "some value"
 });
 
-//Blocks the thread and waits for the result
-echo(future.get());
+/* Code here executes concurrently with the future */
+
+echo("The time before get was #now()# <br />");
+//Blocks the currently executing thread and waits for the result to finish
+echo("The value returned was: <strong>#future.get()#</strong> <br />");
+echo("The time after get was #now()# <br />");
 </cfscript>
 ```
 
-##Why to Use
-A future is useful in the scenario where you have a background task that you want to execute, but will need the result of the task at some point during the request. For example, say you have to make an HTTP request to a third party resouce to get some data, and do some local querying for other data, and then when these are both complete, output them to the browser.
+The output of this basic example is:
 
-You don't need to use a future when you do not care about the result of the task. In this case, a simple thread {} will suffice.
+```
+The time before get was {ts '2016-05-07 16:42:19'} 
+The value returned was: some value 
+The time after get was {ts '2016-05-07 16:42:21'} 
+```
+
+##Why to Use
+A future is useful in the scenario where there is a background task will execute, but the thread creating the future will need the result of the future at some point during the request. For example, say there is a long running HTTP request to a third party resouce to get some data. A future can be created, the page can continue processing other items, and the page can get the value of the future when it is complete. 
+
+A future is not necessary when the page does not care about the result and it can coplete in the background, in those cases, a simple thread {} will suffice.
 
 ##Features
 ###Futures can execute callbacks
