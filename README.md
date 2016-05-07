@@ -30,7 +30,10 @@ The value returned was: some value
 The time after get was {ts '2016-05-07 16:42:21'} 
 ```
 
-This simple case is simply syntactic sugar over manually handling threads. The exact same functionality would be traditionnaly managed with the `thread {}` tag like so:
+Calling `get()` on a future blocks the thread to wait on a response value from the future.
+
+
+This future above is simply syntactic sugar over manually handling threads. The exact same functionality would be traditionnaly managed with the `thread {}` tag like so:
 
 ```coldfusion
 <cfscript>
