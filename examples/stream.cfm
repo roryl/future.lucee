@@ -1,56 +1,42 @@
 <cfscript>
 timer type="outline" {
-
+	//A fake datastore to mimic a database
 	storage = [];
 
-
-	writeLog("stream test");
-
+	//A fake HTTP request to get some data between 0 and 100
 	function geHTTPData(){	
-		// sleep(randRange(10,50));
 		sleep(50);
 		return randRange(0,100);
 	}
 
-
-	function saveToDatabase(value){
-		// sleep(randRange(10,50));
+	//A fake function to save data to a database
+	function saveToDatabase(value){		
 		sleep(100);
 		storage.append(value);
 	}
 
-
-
+	//A future which gets 10 numbers from the HTTP request
 	getAll = new future(function(this){		
+		
 		for(i=1; i <= 10; i++){
 			var data = geHTTPData();			
 			this.reply(data);
 		}
+
 	});
 	
-	
-	putAll = new future(function(this){
-		var working = 0;		
-				
-		data = this.yield(getAll);			
+	//A future which waits on getAll before proceeding
+	putAll = new future(function(this){		
+		
+		var data = this.yield(getAll);			
 		while(!isNull(data)){
 			saveToDatabase(data * -1);				
-			data = this.yield(getAll);
-		}			
+			var data = this.yield(getAll);
+		}	
 		
 	});
-	
-	writeDump(now());
-	
+
 	writeDump(putAll.get());
-
-	writeDump(now());
+	writeDump(storage);
 }
-
-// sleep(1000);
-// writeDump(queue);
-writeDump(storage);
-
-
-
 </cfscript>
