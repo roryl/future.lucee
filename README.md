@@ -146,9 +146,11 @@ This outputs `The result was: 30 and took 2525 ms to finish.`
 We can see that by interleaving, total sleep time was about 500 ms less than the total sleep time of 3000 ms. This is because the first 500ms executed concurrently together, the pong yielded to ping.
 
 ###Streaming Futures
-Futures can cooperatievely multi-task, pass messages and enable realtime streaming workloads. Streaming is best illustrated by thinking about video straming. In order to stream a video to a client, the video client and the server cooperate to pass data when the client is ready, but in the case of youtube for example, the server does not send too much more video than the client is ready for. Youtube stays a head of the client but a few seconds, but does not send all of the data. This way if the user pauses the video, youtube did not send wasted data.
+Futures can cooperatievely multi-task, pass messages and enable realtime streaming workloads. Streaming is best illustrated by thinking about video streaming. In order to stream a video to a client, the video client and the server cooperate to pass data when the client is ready. In the case of youtube for example, the server does not send too much more video than the client is ready for. Youtube stays ahead of the client but a few seconds, but does not send all of the data. This way if the user pauses the video, youtube did not send wasted data.
 
-Though in Lucee, Futures wouldn't be used to implement a video streaming server, imagine a situation wherein a lot of HTTP requests need to be made, and then that data processed and put into a database. If done sequentially, then the total time to complete will be all of the HTTP requests plus all of the database inserts. One could also use a number of queueing strategies and watchers in which one process adds items to a shared queue that another process takes off. But setting that up manually is not trivial. Lucee Futures provide mechanisms to `yeild()` and `reply()` messages to enable these streaming workloads
+Though in Lucee, Futures wouldn't be used to implement a video streaming server, imagine a situation wherein a lot of HTTP requests need to be made, and then that data processed and put into a database. If done sequentially, then the total time to complete will be all of the HTTP requests plus all of the database inserts. One could also use a number of queueing strategies and watchers in which one process adds items to a shared queue that another process takes items off. But setting that up manually is not trivial. Lucee Futures provide mechanisms to `yeild()` and `reply()` messages to enable these streaming workloads.
+
+This example below makes fake HTTP requests and fake data inserts to illustrate a streaming scenario. 
 
 ```coldfusion
 <cfscript>
@@ -180,8 +182,6 @@ timer type="outline" {
 	
 	//A future which waits on getAll before proceeding
 	putAll = new future(function(this){
-		var working = 0;		
-				
 		var data = this.yield(getAll);			
 		while(!isNull(data)){
 			saveToDatabase(data * -1);				
