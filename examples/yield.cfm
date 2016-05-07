@@ -13,5 +13,6 @@ pong = new future(function(this){
 	sleep(1000);	
 	return 10 + ping.get();
 });
+
 echo("The result was: #pong.get()# and took #pong.elapsed()# ms to finish.");
 </cfscript>

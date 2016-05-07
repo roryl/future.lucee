@@ -28,8 +28,12 @@ component accessors="true" {
 			thread action="sleep" name="#variables.name#" duration="10";
 			variables.running = true;
 
+			/*
+			Check if there is a prior future defined. This is set by the future.then() method. 
+			If there are any priors then they must complete before this thread can complete.
+			 */
 			if(structKeyExists(variables,"prior")){
-				//Block the execution of this thread untilt he prior future is complete
+				//Block the execution of this thread until he prior future is complete
 				variables.prior.get();				
 			}
 
@@ -70,6 +74,7 @@ component accessors="true" {
 					}
 				}
 			}
+			
 			if(!isNull(variables.yieldFrom)){
 				variables.yieldFrom.resume();
 			}			
@@ -171,7 +176,13 @@ component accessors="true" {
 		this.resume();
 	}
 
-	public function reply(data){
+	/**
+	 * Replies to the last future that yielded to this one and optionally passes 
+	 * data to the future that yielded to this one
+	 * @param  {any} data Data to pass to the future that yielded to this one
+	 * @return void      
+	 */
+	public void function reply(data){
 		if(!isNull(variables.yieldFrom)){
 			//Calling the last future to yield to this one
 			if(!isNull(data)){
@@ -183,7 +194,11 @@ component accessors="true" {
 		}
 	}
 
-	public function hasData(){
+	/**
+	 * Checks if this future has data passed to it on its stack
+	 * @return {Boolean} True, this future has data, false it does not
+	 */
+	public boolean function hasData(){
 		return variables.data.len() > 0;
 	}
 
@@ -210,7 +225,26 @@ component accessors="true" {
 				return out;
 			}
 		}
-	}	
+	}
+
+	/**
+	 * Yields execution of the current future and passes execution 
+	 * to the supplied future. This is a wrapper around yield(future)
+	 * to be more descriptive. 
+	 *  
+	 * @param  required future        Future The future to yield to
+	 * @return any      			  Will return the value of any replies to the future thay yielded
+	 */
+	public any function yieldTo(required future Future){
+		return yield(arguments.yieldTo);		
+	}
+
+	/*** PRIVATE PUBLIC METHODS - DO NOT USE ***/
+	/*
+	The following methods are used by futures for communicating with each other. 
+	They are public because futures need to access them on other future, but they are
+	not intended for the user.
+	 */
 
 	public function _yieldBack(){
 		if(!isNull(variables.yieldFrom)){
