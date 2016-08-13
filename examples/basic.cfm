@@ -10,7 +10,7 @@ echo("The time before get was #now()# <br />");
 //Blocks the currently executing thread and waits for the result to finish
 echo("The value returned was: <strong>#future.get()#</strong> <br />");
 echo("The time after get was #now()# <br />");
-
+a
 request.bar = "";
 thread name="foo" {
 	request.bar = "baz";

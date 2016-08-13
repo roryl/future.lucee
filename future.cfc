@@ -19,13 +19,13 @@ component accessors="true" {
 		variables.yields = [];
 		variables.data = [];
 		variables.resumeallyields = false;
-		
+		var pool = new pool();				
+
 		if(structKeyExists(arguments,"success")){variables.success = arguments.success;}
 		if(structKeyExists(arguments,"error")){variables.error = arguments.error;}
 		if(structKeyExists(arguments,"finally")){variables.finally = arguments.finally;}
 
-		thread name="#variables.name#" action="run" {
-			thread action="sleep" name="#variables.name#" duration="10";
+		variables.taskRunner = new task(function(){
 			variables.running = true;
 
 			/*
@@ -77,8 +77,72 @@ component accessors="true" {
 			
 			if(!isNull(variables.yieldFrom)){
 				variables.yieldFrom.resume();
-			}			
+			}
+		});
+		
+		lock scope="application" timeout="10"{
+			// variables.thread = pool.getThread();
+			// variables.thread.setCurrentTask(taskRunner);
+			// variables.queue = pool.getQueue();
+			// variables.queue.addTask(taskRunner);
 		}
+
+
+		// thread name="#variables.name#" action="run" {
+		// 	thread action="sleep" name="#variables.name#" duration="10";
+		// 	variables.running = true;
+
+		// 	/*
+		// 	Check if there is a prior future defined. This is set by the future.then() method. 
+		// 	If there are any priors then they must complete before this thread can complete.
+		// 	 */
+		// 	if(structKeyExists(variables,"prior")){
+		// 		//Block the execution of this thread until he prior future is complete
+		// 		variables.prior.get();				
+		// 	}
+
+		// 	try {
+
+		// 		if(structKeyExists(variables,"prior")){
+		// 			variables.taskLineNumber = callStackGet()[1].lineNumber + 1;
+		// 			variables.result = variables.task(this, variables.prior);
+		// 		} else {
+		// 			variables.taskLineNumber = callStackGet()[1].lineNumber + 1;
+		// 			variables.result = variables.task(this);														
+		// 		}								
+		// 		variables.done = true;
+		// 		variables.endTime = getTickCount();
+		// 	} catch (any e){
+		// 		writeLog("error thrown");
+		// 		variables.taskError = e;
+		// 		variables.done = true;
+				
+		// 		if(structKeyExists(variables,"error")){
+		// 			variables.error(variables.taskError);
+		// 		}
+
+		// 	} finally {
+				
+		// 		if(!structKeyExists(variables,"error")){
+		// 			if(structKeyExists(variables,"success")){
+		// 				variables.success(variables.result);						
+		// 			}
+		// 		}
+
+		// 		if(structKeyExists(variables,"finally")){
+
+		// 			if(structKeyExists(variables,"error")){
+		// 				variables.finally(error=variables.error);						
+		// 			} else {
+		// 				variables.finally(result=variables.result);
+		// 			}
+		// 		}
+		// 	}
+			
+		// 	if(!isNull(variables.yieldFrom)){
+		// 		variables.yieldFrom.resume();
+		// 	}			
+		// }
 	}
 
 	public function then(required future future){
@@ -108,7 +172,8 @@ component accessors="true" {
 			this.resume();
 		}
 
-		thread action="join" name="#variables.name#" timeout="#arguments.milliseconds#";				
+		variables.taskRunner.getResult(milliseconds);
+		// thread action="join" name="#variables.name#" timeout="#arguments.milliseconds#";				
 		
 		if(structKeyExists(variables,"taskError")){
 			throw(variables.taskError);
@@ -124,7 +189,8 @@ component accessors="true" {
 	}
 
 	public function hasError(){
-		thread action="join" name="#variables.name#";	
+		variables.taskRunner.getResult();
+		// thread action="join" name="#variables.name#";	
 		return structKeyExists(variables,"taskError");
 	}
 
@@ -132,7 +198,8 @@ component accessors="true" {
 		if(isDone()){
 			return false;
 		} else {
-			thread action="terminate" name="#variables.name#";
+			variables.thread.kill();
+			// thread action="terminate" name="#variables.name#";
 			variables.done = true;
 			variables.canceled = true;
 			return true;

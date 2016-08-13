@@ -15,10 +15,12 @@ component extends="testbox.system.BaseSpec"{
 
 	// executes before every test case
 	function setup( currentMethod ){
+		structDelete(application,"pool");
 	}
 
 	// executes after every test case
 	function teardown( currentMethod ){
+		structDelete(application,"pool");
 	}
 
 /*********************************** TEST CASES BELOW ***********************************/
@@ -101,9 +103,7 @@ component extends="testbox.system.BaseSpec"{
 	}
 
 	function nestedExampleTest(){		
-		expect(function(){
-			include template="/examples/nested.cfm";
-		}).toThrow( message="could not create a thread within a child thread");
+		include template="/examples/nested.cfm";
 	}
 
 	function parallelExampleTest(){
@@ -228,7 +228,7 @@ component extends="testbox.system.BaseSpec"{
 		
 	}
 
-	function yeildTest(){
+	function yeildTest() skip="true"{
 
 		writeLog("new yieldTest");
 
@@ -287,6 +287,6 @@ component extends="testbox.system.BaseSpec"{
 		sleep(50);
 		ping.call("10");
 		expect(ping.get()).toBe(30);
-	}
+	}	
 	
 }
