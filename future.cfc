@@ -83,8 +83,8 @@ component accessors="true" {
 		lock scope="application" timeout="10"{
 			// variables.thread = pool.getThread();
 			// variables.thread.setCurrentTask(taskRunner);
-			// variables.queue = pool.getQueue();
-			// variables.queue.addTask(taskRunner);
+			variables.queue = pool.getQueue();
+			variables.queue.addTask(taskRunner);
 		}
 
 
@@ -198,7 +198,7 @@ component accessors="true" {
 		if(isDone()){
 			return false;
 		} else {
-			variables.thread.kill();
+			variables.taskRunner.kill();
 			// thread action="terminate" name="#variables.name#";
 			variables.done = true;
 			variables.canceled = true;

@@ -42,7 +42,21 @@ component accessors="true" {
 		return variables.status == "completed";
 	}
 
-	public void function setRunning(){
+	public function isKilled(){
+		return variables.status == "killed";
+	}
+
+	public void function kill(){
+		if(structKeyExists(variables,"thread")){
+			variables.status = "killed";
+			variables.thread.kill();
+		} else {
+			variables.status = "killed";
+		}
+	}
+
+	public void function setRunning(required thread thread){
+		variables.thread = arguments.thread;
 		variables.status = "running";
 	}
 

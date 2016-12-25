@@ -30,7 +30,7 @@ component {
 					variables.sleeping = false;
 					
 					var task = variables.currentTask;
-					task.setRunning();
+					task.setRunning(this);
 
 					try {
 						task.run();

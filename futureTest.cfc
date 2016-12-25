@@ -20,7 +20,10 @@ component extends="testbox.system.BaseSpec"{
 
 	// executes after every test case
 	function teardown( currentMethod ){
-		structDelete(application,"pool");
+		if(application.keyExists("pool")){
+			application.pool.killAll();
+			structDelete(application,"pool");			
+		}
 	}
 
 /*********************************** TEST CASES BELOW ***********************************/
@@ -54,6 +57,10 @@ component extends="testbox.system.BaseSpec"{
 			}
 		);
 		expect(future.get()).toBe(10);
+	}
+
+	function streadTest(){
+
 	}
 
 	function futureFinallyTest(){
@@ -228,8 +235,8 @@ component extends="testbox.system.BaseSpec"{
 		
 	}
 
-	function yeildTest() skip="true"{
-
+	function yeildTest(){
+		setting requesttimeout="10000";
 		writeLog("new yieldTest");
 
 		var firstFuture = new future(function(this){
